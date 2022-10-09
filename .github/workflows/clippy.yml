@@ -1,0 +1,24 @@
+on: push
+
+name: Clippy check
+
+jobs:
+  clippy_check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: nightly
+
+      - name: Rust Dependency Cache
+        uses: Swatinem/rust-cache@v2
+
+      - run: cargo install clippy-sarif sarif-fmt
+      - run: cargo clippy --all-targets --all-features --message-format=json |
+          clippy-sarif | tee results.sarif | sarif-fmt
+      - name: Upload SARIF file
+        uses: github/codeql-action/upload-sarif@v1
+        with:
+          sarif_file: results.sarif

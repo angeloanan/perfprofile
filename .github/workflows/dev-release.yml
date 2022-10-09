@@ -1,0 +1,32 @@
+on: push
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  release:
+    name: Development Build - ${{ matrix.platform }}
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [ubuntu-latest]
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@master
+
+      - name: Setup Rust Toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: nightly
+
+      - name: Rust Dependency Cache
+        uses: Swatinem/rust-cache@v2
+
+      - run: cargo build --release
+
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ matrix.platform }} - ${{ github.sha }}
+          path: |
+            target/release/perfprofile
