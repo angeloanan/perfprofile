@@ -1,3 +1,7 @@
+#![forbid(unsafe_code)]
+#![deny(clippy::all, clippy::pedantic)]
+
+mod icons;
 mod profile;
 mod tray;
 
@@ -21,13 +25,15 @@ fn update_status(tray_handle: &ksni::Handle<tray::PerfProfileTray>) {
 
     notify_rust::Notification::new()
         .summary("Platform profile changed")
-        .body(format!("Current profile: {}", profile).as_str())
+        .body(format!("Current profile: {profile}").as_str())
         .timeout(Timeout::Milliseconds(2_500))
         .show()
         .unwrap();
 }
 
 fn main() {
+    icons::install();
+
     let service = ksni::TrayService::new(tray::PerfProfileTray {
         current_profile: read_power_profile(),
     });
@@ -36,7 +42,7 @@ fn main() {
 
     let mut watcher = notify::recommended_watcher(move |res| match res {
         Ok(_) => update_status(&tray_handle),
-        Err(e) => println!("watch error: {:?}", e),
+        Err(e) => println!("watch error: {e}"),
     })
     .unwrap();
 
@@ -48,6 +54,6 @@ fn main() {
         .unwrap();
 
     loop {
-        thread::park()
+        thread::park();
     }
 }
